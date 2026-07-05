@@ -1,0 +1,913 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Video 2 - Cos'e l'AI oggi</title>
+    <style>
+      :root {
+        --bg: #101417;
+        --panel: #172025;
+        --panel-2: #202b30;
+        --ink: #f4efe6;
+        --muted: #b7c0c4;
+        --line: #344149;
+        --teal: #49c5b6;
+        --amber: #f5b85b;
+        --rose: #e86f5f;
+        --blue: #6da7f2;
+        --green: #84c779;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        background: #080a0c;
+        color: var(--ink);
+        font-family:
+          Inter, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont,
+          sans-serif;
+      }
+
+      .progress {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 50;
+        width: 100%;
+        height: 8px;
+        background: #12181c;
+      }
+
+      .progress span {
+        display: block;
+        width: 0;
+        height: 100%;
+        background: var(--teal);
+        transform-origin: left center;
+      }
+
+      .deck {
+        min-height: 100vh;
+        scroll-snap-type: y mandatory;
+      }
+
+      .slide {
+        position: relative;
+        min-height: 100vh;
+        scroll-snap-align: start;
+        overflow: hidden;
+        background:
+          linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, rgba(16, 20, 23, 0) 1px),
+          linear-gradient(rgba(255, 255, 255, 0.038) 1px, rgba(16, 20, 23, 0) 1px),
+          var(--bg);
+        background-size: 80px 80px;
+      }
+
+      .slide::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 18px;
+        height: 100%;
+        background: var(--teal);
+      }
+
+      .slide::after {
+        content: "";
+        position: absolute;
+        right: -42px;
+        bottom: -18px;
+        width: 120px;
+        height: 420px;
+        background: var(--amber);
+        transform: skewX(-13deg);
+        box-shadow: 0 0 90px rgba(245, 184, 91, 0.2);
+      }
+
+      .stage {
+        position: relative;
+        z-index: 1;
+        width: min(1728px, calc(100vw - 96px));
+        min-height: 100vh;
+        margin: 0 auto;
+        padding: 8vh 0 7vh;
+        display: grid;
+        grid-template-columns: minmax(0, 0.95fr) minmax(420px, 0.8fr);
+        gap: clamp(36px, 5vw, 96px);
+        align-items: center;
+      }
+
+      .copy {
+        align-self: center;
+      }
+
+      .kicker {
+        margin: 0 0 20px;
+        color: var(--teal);
+        font-size: clamp(18px, 1.65vw, 32px);
+        font-weight: 850;
+        letter-spacing: 0;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        max-width: 980px;
+        margin: 0;
+        color: var(--ink);
+        font-size: clamp(42px, 4.2vw, 80px);
+        line-height: 1.03;
+        font-weight: 880;
+        letter-spacing: 0;
+      }
+
+      .wide h1,
+      h1.wide {
+        max-width: 1420px;
+      }
+
+      .support {
+        max-width: 900px;
+        margin: 28px 0 0;
+        color: var(--muted);
+        font-size: clamp(22px, 2vw, 38px);
+        line-height: 1.25;
+      }
+
+      .accent-line {
+        width: 240px;
+        height: 8px;
+        margin-top: 36px;
+        background: var(--amber);
+      }
+
+      .visual {
+        position: relative;
+        min-height: 420px;
+        display: grid;
+        align-content: center;
+        gap: 18px;
+      }
+
+      .card,
+      .level-card,
+      .node,
+      .command-card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(23, 32, 37, 0.94);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.22);
+      }
+
+      .level-list {
+        display: grid;
+        gap: 18px;
+      }
+
+      .level-card {
+        min-height: 112px;
+        padding: 22px 24px;
+        display: grid;
+        grid-template-columns: 72px 1fr;
+        align-items: center;
+        gap: 18px;
+      }
+
+      .num,
+      .index {
+        width: 58px;
+        height: 58px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        color: var(--ink);
+        background: #253138;
+        border: 2px solid var(--teal);
+        font-size: 30px;
+        font-weight: 900;
+      }
+
+      .level-card:nth-child(2) .num {
+        border-color: var(--amber);
+      }
+
+      .level-card:nth-child(3) .num {
+        border-color: var(--rose);
+      }
+
+      .level-card:nth-child(4) .num {
+        border-color: var(--blue);
+      }
+
+      .level-name {
+        display: block;
+        color: var(--ink);
+        font-size: clamp(26px, 2vw, 38px);
+        line-height: 1;
+        font-weight: 850;
+      }
+
+      .level-sub {
+        display: block;
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: clamp(20px, 1.6vw, 30px);
+      }
+
+      .map {
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 20px;
+        align-items: end;
+        margin-top: 38px;
+      }
+
+      .map-step {
+        min-height: 235px;
+        padding: 26px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      .map-step:nth-child(1) {
+        min-height: 210px;
+      }
+
+      .map-step:nth-child(2) {
+        min-height: 250px;
+      }
+
+      .map-step:nth-child(3) {
+        min-height: 300px;
+        border-color: var(--rose);
+      }
+
+      .map-step:nth-child(4) {
+        min-height: 350px;
+      }
+
+      .map-label {
+        color: var(--muted);
+        font-size: clamp(18px, 1.6vw, 30px);
+        font-weight: 750;
+      }
+
+      .map-main {
+        color: var(--ink);
+        font-size: clamp(26px, 2.2vw, 42px);
+        line-height: 1.08;
+        font-weight: 840;
+      }
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: fit-content;
+        min-height: 50px;
+        padding: 8px 16px;
+        border-radius: 8px;
+        background: #132023;
+        color: var(--teal);
+        border: 1px solid #2e554f;
+        font-size: clamp(18px, 1.45vw, 28px);
+        font-weight: 800;
+      }
+
+      .bubble {
+        min-height: 140px;
+        padding: 30px 34px;
+        border-radius: 8px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        font-size: clamp(28px, 2.2vw, 42px);
+        line-height: 1.18;
+        font-weight: 780;
+      }
+
+      .bubble.answer {
+        margin-left: 70px;
+        background: var(--panel-2);
+      }
+
+      .limits,
+      .criteria-grid,
+      .commands {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+      }
+
+      .limits {
+        grid-template-columns: 1fr;
+      }
+
+      .mini-card {
+        padding: 24px;
+      }
+
+      .mini-card strong,
+      .criteria strong,
+      .command-card strong {
+        display: block;
+        color: var(--ink);
+        font-size: clamp(24px, 2vw, 38px);
+        line-height: 1.1;
+      }
+
+      .mini-card span,
+      .criteria span,
+      .command-card span {
+        display: block;
+        margin-top: 12px;
+        color: var(--muted);
+        font-size: clamp(18px, 1.55vw, 30px);
+        line-height: 1.18;
+      }
+
+      .tool-map,
+      .agent-loop,
+      .multi-map {
+        position: relative;
+        min-height: 620px;
+      }
+
+      .model-core {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 260px;
+        height: 260px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        border: 3px solid var(--teal);
+        background: #132023;
+        color: var(--ink);
+        font-size: 42px;
+        line-height: 1.05;
+        font-weight: 850;
+        text-align: center;
+        transform: translate(-50%, -50%);
+      }
+
+      .node {
+        position: absolute;
+        width: 220px;
+        min-height: 118px;
+        padding: 22px 24px;
+        color: var(--ink);
+        font-size: 32px;
+        line-height: 1.1;
+        font-weight: 800;
+      }
+
+      .node small {
+        display: block;
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 24px;
+        font-weight: 650;
+      }
+
+      .n-top {
+        left: 50%;
+        top: 0;
+        transform: translateX(-50%);
+      }
+
+      .n-left {
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+
+      .n-right {
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+
+      .n-bottom {
+        left: 50%;
+        bottom: 0;
+        transform: translateX(-50%);
+      }
+
+      .ring {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 360px;
+        height: 360px;
+        border-radius: 50%;
+        border: 5px solid #344149;
+        transform: translate(-50%, -50%);
+      }
+
+      .ring::after {
+        content: "";
+        position: absolute;
+        inset: -5px;
+        border-radius: 50%;
+        border: 5px solid var(--teal);
+        clip-path: polygon(50% 0, 100% 0, 100% 54%, 50% 54%);
+      }
+
+      .terminal {
+        display: grid;
+        gap: 18px;
+      }
+
+      .terminal-line {
+        padding: 28px 30px;
+        border-radius: 8px;
+        background: #0b0f11;
+        border: 1px solid #314047;
+        color: #d8f6ee;
+        font-family: ui-monospace, monospace;
+        font-size: clamp(22px, 1.8vw, 34px);
+        line-height: 1.25;
+      }
+
+      .terminal-line.output {
+        background: var(--panel);
+        color: var(--ink);
+        font-family: Inter, "Segoe UI", system-ui, sans-serif;
+      }
+
+      .arrow {
+        color: var(--amber);
+        font-size: 40px;
+        font-weight: 900;
+        text-align: center;
+      }
+
+      .subagents,
+      .compare {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 18px;
+      }
+
+      .manager {
+        width: min(320px, 100%);
+        margin: 0 auto 36px;
+        padding: 26px;
+        border: 2px solid var(--amber);
+        border-radius: 8px;
+        background: var(--panel);
+        text-align: center;
+        font-size: clamp(26px, 2vw, 40px);
+        font-weight: 850;
+      }
+
+      .subagent,
+      .compare-col,
+      .criteria {
+        padding: 26px;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        background: var(--panel);
+      }
+
+      .subagent strong {
+        display: block;
+        font-size: clamp(24px, 1.9vw, 36px);
+        line-height: 1.1;
+      }
+
+      .subagent span {
+        display: block;
+        margin-top: 12px;
+        color: var(--muted);
+        font-size: clamp(18px, 1.45vw, 28px);
+      }
+
+      .time-rail,
+      .goal-bar {
+        height: 14px;
+        margin-top: 38px;
+        border-radius: 999px;
+        background: #2f3d43;
+        overflow: hidden;
+      }
+
+      .time-rail span,
+      .goal-bar span {
+        display: block;
+        width: 100%;
+        height: 100%;
+        background: var(--teal);
+      }
+
+      .compare {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .compare-col h3 {
+        margin: 0;
+        font-family: ui-monospace, monospace;
+        color: var(--ink);
+        font-size: clamp(34px, 3vw, 56px);
+      }
+
+      .compare-col p {
+        margin: 22px 0 0;
+        color: var(--muted);
+        font-size: clamp(22px, 1.9vw, 36px);
+        line-height: 1.2;
+      }
+
+      .goal-bar span {
+        background: var(--rose);
+      }
+
+      .criteria-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+
+      .criteria {
+        min-height: 300px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      .commands code {
+        display: block;
+        color: var(--teal);
+        font-family: ui-monospace, monospace;
+        font-size: clamp(28px, 2.4vw, 44px);
+        font-weight: 850;
+      }
+
+      .command-card {
+        min-height: 170px;
+        padding: 28px;
+      }
+
+      .notes {
+        position: absolute;
+        left: max(48px, calc((100vw - 1728px) / 2));
+        bottom: 34px;
+        z-index: 2;
+        color: var(--muted);
+        font-size: 16px;
+      }
+
+      [data-animate] {
+        opacity: 0;
+        transform: translateY(34px);
+        transition:
+          opacity 650ms ease,
+          transform 650ms cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+
+      .is-visible [data-animate] {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .is-visible [data-delay="1"] {
+        transition-delay: 120ms;
+      }
+
+      .is-visible [data-delay="2"] {
+        transition-delay: 240ms;
+      }
+
+      .is-visible [data-delay="3"] {
+        transition-delay: 360ms;
+      }
+
+      .is-visible [data-delay="4"] {
+        transition-delay: 480ms;
+      }
+
+      body.pdf-mode .slide {
+        display: none;
+      }
+
+      body.pdf-mode .slide.is-current {
+        display: block;
+      }
+
+      body.pdf-mode [data-animate] {
+        transition: none !important;
+      }
+
+      @media (max-width: 980px) {
+        .deck {
+          scroll-snap-type: none;
+        }
+
+        .stage {
+          width: min(100% - 40px, 780px);
+          padding: 72px 0 64px;
+          grid-template-columns: 1fr;
+          gap: 36px;
+        }
+
+        .slide {
+          min-height: auto;
+        }
+
+        .visual,
+        .tool-map,
+        .agent-loop,
+        .multi-map {
+          min-height: auto;
+        }
+
+        .map,
+        .criteria-grid,
+        .commands,
+        .compare,
+        .subagents {
+          grid-template-columns: 1fr;
+        }
+
+        .tool-map,
+        .agent-loop {
+          display: grid;
+          gap: 18px;
+        }
+
+        .model-core,
+        .node,
+        .ring {
+          position: static;
+          transform: none;
+          width: 100%;
+          height: auto;
+          min-height: 118px;
+          border-radius: 8px;
+        }
+
+        .ring {
+          display: none;
+        }
+
+        .notes {
+          position: static;
+          width: min(100% - 40px, 780px);
+          margin: -40px auto 40px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="progress" aria-hidden="true"><span id="progress"></span></div>
+
+    <main class="deck">
+      <section class="slide is-visible" id="slide-1">
+        <div class="stage">
+          <div class="copy">
+            <p class="kicker" data-animate>Video 2 - AI oggi</p>
+            <h1 data-animate data-delay="1">Quando diciamo AI, stiamo parlando di quattro sistemi diversi.</h1>
+            <p class="support" data-animate data-delay="2">
+              Prima di usare Claude Code sul progetto, fissiamo il vocabolario: chatbot, tool use, agente, sistemi ricorsivi.
+            </p>
+            <div class="accent-line" data-animate data-delay="3"></div>
+          </div>
+          <div class="visual level-list">
+            <div class="level-card" data-animate data-delay="1"><div class="num">1</div><div><span class="level-name">Chatbot</span><span class="level-sub">risponde in chat</span></div></div>
+            <div class="level-card" data-animate data-delay="2"><div class="num">2</div><div><span class="level-name">Strumenti</span><span class="level-sub">agisce in una richiesta</span></div></div>
+            <div class="level-card" data-animate data-delay="3"><div class="num">3</div><div><span class="level-name">Agente</span><span class="level-sub">decide i passaggi</span></div></div>
+            <div class="level-card" data-animate data-delay="4"><div class="num">4</div><div><span class="level-name">Ricorsivo</span><span class="level-sub">lavora nel tempo</span></div></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide wide" id="slide-2">
+        <div class="stage" style="grid-template-columns: 1fr">
+          <div class="copy">
+            <p class="kicker" data-animate>La scala dell'autonomia</p>
+            <h1 class="wide" data-animate data-delay="1">Il percorso va da risposta singola a lavoro autonomo nel tempo.</h1>
+          </div>
+          <div class="map">
+            <div class="map-step card" data-animate data-delay="1"><div class="map-label">Livello 1</div><div class="map-main">Risposta in chat</div><span class="tag">testo</span></div>
+            <div class="map-step card" data-animate data-delay="2"><div class="map-label">Livello 2</div><div class="map-main">Uso di strumenti</div><span class="tag">azioni puntuali</span></div>
+            <div class="map-step card" data-animate data-delay="3"><div class="map-label">Livello 3</div><div class="map-main">Obiettivo operativo</div><span class="tag">Claude Code</span></div>
+            <div class="map-step card" data-animate data-delay="4"><div class="map-label">Livello 4</div><div class="map-main">Iterazione nel tempo</div><span class="tag">loop / goal</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" id="slide-3">
+        <div class="stage">
+          <div class="copy">
+            <p class="kicker" data-animate>Livello 1 - chatbot</p>
+            <h1 data-animate data-delay="1">Il chatbot produce testo, ma non agisce sul progetto.</h1>
+            <p class="support" data-animate data-delay="2">
+              Perfetto per spiegare, scrivere e fare brainstorming. Limitato quando serve aprire file, eseguire comandi o verificare risultati.
+            </p>
+          </div>
+          <div class="visual">
+            <div class="bubble" data-animate data-delay="1">"Spiegami cos'e la fotosintesi"</div>
+            <div class="bubble answer" data-animate data-delay="2">Risposta testuale dentro la chat</div>
+            <div class="limits">
+              <div class="mini-card card" data-animate data-delay="3"><strong>Memoria locale</strong><span>ricorda solo la conversazione aperta</span></div>
+              <div class="mini-card card" data-animate data-delay="4"><strong>Nessun comando</strong><span>non verifica sul sistema reale</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" id="slide-4">
+        <div class="stage">
+          <div class="copy">
+            <p class="kicker" data-animate>Livello 2 - assistente con strumenti</p>
+            <h1 data-animate data-delay="1">L'assistente con strumenti puo fare azioni dentro una richiesta.</h1>
+            <p class="support" data-animate data-delay="2">
+              Cerca, legge, calcola o chiama funzioni. Ma il ritmo resta: domanda, azione, risposta, prossima domanda.
+            </p>
+          </div>
+          <div class="visual tool-map">
+            <div class="model-core" data-animate data-delay="1">Modello<br />AI</div>
+            <div class="node n-top" data-animate data-delay="2">Web<small>ricerca e fonti</small></div>
+            <div class="node n-left" data-animate data-delay="3">Documenti<small>lettura file</small></div>
+            <div class="node n-right" data-animate data-delay="3">Calcoli<small>funzioni e dati</small></div>
+            <div class="node n-bottom" data-animate data-delay="4">Servizi<small>API e plugin</small></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" id="slide-5">
+        <div class="stage">
+          <div class="copy">
+            <p class="kicker" data-animate>Livello 3 - agente autonomo</p>
+            <h1 data-animate data-delay="1">Un agente riceve un obiettivo e decide i prossimi passi.</h1>
+            <p class="support" data-animate data-delay="2">
+              Qui si colloca Claude Code: non solo risponde, ma lavora su un percorso operativo e controlla il proprio risultato.
+            </p>
+          </div>
+          <div class="visual agent-loop">
+            <div class="ring" data-animate data-delay="1"></div>
+            <div class="node n-top" data-animate data-delay="1">Obiettivo<small>"collega Obsidian"</small></div>
+            <div class="node n-right" data-animate data-delay="2">Piano<small>capisce i passi</small></div>
+            <div class="node n-bottom" data-animate data-delay="3">Strumenti<small>usa terminale e file</small></div>
+            <div class="node n-left" data-animate data-delay="4">Verifica<small>controlla se funziona</small></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" id="slide-6">
+        <div class="stage">
+          <div class="copy">
+            <p class="kicker" data-animate>Il ponte con il Video 1</p>
+            <h1 data-animate data-delay="1">Claude Code e l'esempio pratico che abbiamo appena installato.</h1>
+            <p class="support" data-animate data-delay="2">
+              L'esempio Obsidian mostra la differenza: obiettivo in linguaggio naturale, comando scelto dall'agente, conferma, verifica.
+            </p>
+          </div>
+          <div class="visual terminal">
+            <div class="terminal-line" data-animate data-delay="1">&gt; collega Claude Code al mio vault Obsidian</div>
+            <div class="arrow" data-animate data-delay="2">↓</div>
+            <div class="terminal-line output" data-animate data-delay="3">Claude propone il collegamento MCP corretto</div>
+            <div class="arrow" data-animate data-delay="4">↓</div>
+            <div class="terminal-line output" data-animate data-delay="4">Conferma umana, esecuzione, verifica finale</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" id="slide-7">
+        <div class="stage">
+          <div class="copy">
+            <p class="kicker" data-animate>Livello 4 - sistemi ricorsivi</p>
+            <h1 data-animate data-delay="1">I sistemi ricorsivi fanno lavorare piu agenti e piu turni.</h1>
+            <p class="support" data-animate data-delay="2">
+              L'agente principale puo delegare, ripetere controlli o continuare finche una condizione non e soddisfatta.
+            </p>
+          </div>
+          <div class="visual multi-map">
+            <div class="manager" data-animate data-delay="1">Agente principale</div>
+            <div class="subagents">
+              <div class="subagent" data-animate data-delay="2"><strong>Ricerca</strong><span>raccoglie contesto</span></div>
+              <div class="subagent" data-animate data-delay="3"><strong>Implementa</strong><span>lavora su una parte</span></div>
+              <div class="subagent" data-animate data-delay="4"><strong>Verifica</strong><span>controlla il risultato</span></div>
+            </div>
+            <div class="time-rail" data-animate data-delay="4"><span></span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide wide" id="slide-8">
+        <div class="stage" style="grid-template-columns: 1fr">
+          <div class="copy">
+            <p class="kicker" data-animate>Anteprima del Video 5</p>
+            <h1 class="wide" data-animate data-delay="1">`/loop` controlla nel tempo, `/goal` punta a un risultato.</h1>
+          </div>
+          <div class="compare">
+            <div class="compare-col" data-animate data-delay="2">
+              <h3>/loop</h3>
+              <p>Ripete un controllo: log, build, stato esterno.</p>
+              <div class="time-rail"><span></span></div>
+            </div>
+            <div class="compare-col" data-animate data-delay="3">
+              <h3>/goal</h3>
+              <p>Lavora finche una condizione finale e raggiunta.</p>
+              <div class="goal-bar"><span></span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide wide" id="slide-9">
+        <div class="stage" style="grid-template-columns: 1fr">
+          <div class="copy">
+            <p class="kicker" data-animate>Definizione per il corso</p>
+            <h1 class="wide" data-animate data-delay="1">Da ora, "agente" significa decisione operativa, non solo risposta.</h1>
+          </div>
+          <div class="criteria-grid">
+            <div class="criteria" data-animate data-delay="1"><div class="index">1</div><strong>Riceve un obiettivo</strong><span>non solo una domanda isolata</span></div>
+            <div class="criteria" data-animate data-delay="2"><div class="index">2</div><strong>Sceglie strumenti</strong><span>file, terminale, web, MCP</span></div>
+            <div class="criteria" data-animate data-delay="3"><div class="index">3</div><strong>Verifica il lavoro</strong><span>controlla il risultato reale</span></div>
+            <div class="criteria" data-animate data-delay="4"><div class="index">4</div><strong>Chiede conferma</strong><span>quando l'azione e rischiosa</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" id="slide-10">
+        <div class="stage">
+          <div class="copy">
+            <p class="kicker" data-animate>Chiusura</p>
+            <h1 data-animate data-delay="1">Nel prossimo video portiamo questa idea dentro una sessione.</h1>
+            <p class="support" data-animate data-delay="2">
+              Dal concetto di agente passiamo al lavoro pratico: far conoscere il progetto a Claude e impostare permessi, modello ed effort.
+            </p>
+          </div>
+          <div class="visual commands">
+            <div class="command-card" data-animate data-delay="1"><code>/init</code><span>crea il contesto del progetto</span></div>
+            <div class="command-card" data-animate data-delay="2"><code>/permissions</code><span>decide cosa puo fare</span></div>
+            <div class="command-card" data-animate data-delay="3"><code>/model</code><span>sceglie il modello</span></div>
+            <div class="command-card" data-animate data-delay="4"><code>/effort</code><span>regola il ragionamento</span></div>
+          </div>
+        </div>
+        <p class="notes">Video 3 - Le basi: come si lavora dentro una sessione</p>
+      </section>
+    </main>
+
+    <script>
+      const progress = document.getElementById("progress");
+      const slides = Array.from(document.querySelectorAll(".slide"));
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("is-visible");
+            }
+          });
+        },
+        { threshold: 0.35 }
+      );
+
+      slides.forEach((slide) => observer.observe(slide));
+
+      function updateProgress() {
+        const max = document.documentElement.scrollHeight - window.innerHeight;
+        const pct = max > 0 ? window.scrollY / max : 0;
+        progress.style.width = `${Math.max(0, Math.min(1, pct)) * 100}%`;
+      }
+
+      window.addEventListener("scroll", updateProgress, { passive: true });
+      window.addEventListener("resize", updateProgress);
+      updateProgress();
+
+      window.addEventListener("keydown", (event) => {
+        if (!["ArrowDown", "PageDown", "ArrowUp", "PageUp"].includes(event.key)) return;
+        const current = slides.findIndex((slide) => {
+          const rect = slide.getBoundingClientRect();
+          return rect.top <= window.innerHeight * 0.4 && rect.bottom >= window.innerHeight * 0.4;
+        });
+        if (event.key === "ArrowDown" || event.key === "PageDown") {
+          slides[Math.min(slides.length - 1, current + 1)]?.scrollIntoView({ behavior: "smooth" });
+        } else {
+          slides[Math.max(0, current - 1)]?.scrollIntoView({ behavior: "smooth" });
+        }
+      });
+
+      // Used by to-pdf.mjs: freezes the deck to a single fully-revealed slide per page.
+      function show(index) {
+        document.body.classList.add("pdf-mode");
+        const target = Math.max(0, Math.min(slides.length - 1, index));
+        slides.forEach((slide, i) => {
+          slide.classList.toggle("is-current", i === target);
+          slide.classList.toggle("is-visible", i === target);
+        });
+      }
+    </script>
+  </body>
+</html>

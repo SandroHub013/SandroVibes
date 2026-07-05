@@ -1,0 +1,828 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Video 4 - Skill e Plugin</title>
+    <style>
+      :root {
+        --bg: #101417;
+        --panel: #172025;
+        --panel-2: #202b30;
+        --ink: #f4efe6;
+        --muted: #b7c0c4;
+        --line: #344149;
+        --teal: #49c5b6;
+        --amber: #f5b85b;
+        --rose: #e86f5f;
+        --blue: #6da7f2;
+        --green: #84c779;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        overflow: hidden;
+        background: #080a0c;
+        color: var(--ink);
+        font-family:
+          Inter, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont,
+          sans-serif;
+      }
+
+      .progress {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 50;
+        width: 100%;
+        height: 8px;
+        background: #12181c;
+      }
+
+      .progress span {
+        display: block;
+        width: 0;
+        height: 100%;
+        background: var(--teal);
+        transform-origin: left center;
+      }
+
+      .deck {
+        position: relative;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      .slide {
+        position: absolute;
+        inset: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+        opacity: 0;
+        transform: translateY(28px);
+        transition:
+          opacity 480ms ease,
+          transform 480ms cubic-bezier(0.2, 0.8, 0.2, 1);
+        pointer-events: none;
+        z-index: 1;
+        background:
+          linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, rgba(16, 20, 23, 0) 1px),
+          linear-gradient(rgba(255, 255, 255, 0.038) 1px, rgba(16, 20, 23, 0) 1px),
+          var(--bg);
+        background-size: 80px 80px;
+      }
+
+      .slide.is-current {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+        z-index: 2;
+      }
+
+      .slide::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 18px;
+        height: 100%;
+        background: var(--teal);
+      }
+
+      .slide::after {
+        content: "";
+        position: absolute;
+        right: -42px;
+        bottom: -18px;
+        width: 120px;
+        height: 420px;
+        background: var(--amber);
+        transform: skewX(-13deg);
+        box-shadow: 0 0 90px rgba(245, 184, 91, 0.2);
+      }
+
+      .stage {
+        position: relative;
+        z-index: 1;
+        width: min(1728px, calc(100vw - 96px));
+        min-height: 100vh;
+        margin: 0 auto;
+        padding: 8vh 0 7vh;
+        display: grid;
+        grid-template-columns: minmax(0, 0.95fr) minmax(420px, 0.8fr);
+        gap: clamp(36px, 5vw, 96px);
+        align-items: center;
+      }
+
+      .copy {
+        align-self: center;
+      }
+
+      .kicker {
+        margin: 0 0 20px;
+        color: var(--teal);
+        font-size: clamp(18px, 1.65vw, 32px);
+        font-weight: 850;
+        letter-spacing: 0;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        max-width: 980px;
+        margin: 0;
+        color: var(--ink);
+        font-size: clamp(42px, 4.2vw, 80px);
+        line-height: 1.03;
+        font-weight: 880;
+        letter-spacing: 0;
+      }
+
+      .wide h1,
+      h1.wide {
+        max-width: 1420px;
+      }
+
+      .support {
+        max-width: 900px;
+        margin: 28px 0 0;
+        color: var(--muted);
+        font-size: clamp(22px, 2vw, 38px);
+        line-height: 1.25;
+      }
+
+      .accent-line {
+        width: 240px;
+        height: 8px;
+        margin-top: 36px;
+        background: var(--amber);
+      }
+
+      .visual {
+        position: relative;
+        min-height: 420px;
+        display: grid;
+        align-content: center;
+        gap: 18px;
+      }
+
+      .card,
+      .command-card,
+      .perm-card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(23, 32, 37, 0.94);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.22);
+      }
+
+      .map {
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 20px;
+        align-items: end;
+        margin-top: 38px;
+      }
+
+      .map-step {
+        min-height: 260px;
+        padding: 26px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+
+      .map-label {
+        color: var(--muted);
+        font-size: clamp(18px, 1.6vw, 30px);
+        font-weight: 750;
+      }
+
+      .map-main {
+        color: var(--ink);
+        font-size: clamp(24px, 2vw, 40px);
+        line-height: 1.08;
+        font-weight: 840;
+      }
+
+      .tag {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: fit-content;
+        min-height: 50px;
+        padding: 8px 16px;
+        border-radius: 8px;
+        background: #132023;
+        color: var(--teal);
+        border: 1px solid #2e554f;
+        font-size: clamp(16px, 1.3vw, 24px);
+        font-weight: 800;
+        font-family: ui-monospace, monospace;
+      }
+
+      .tag.amber {
+        color: var(--amber);
+        border-color: #5a4720;
+        background: #241c0f;
+      }
+
+      .tag.rose {
+        color: var(--rose);
+        border-color: #5a2c24;
+        background: #241310;
+      }
+
+      .terminal {
+        display: grid;
+        gap: 18px;
+      }
+
+      .terminal-line {
+        padding: 28px 30px;
+        border-radius: 8px;
+        background: #0b0f11;
+        border: 1px solid #314047;
+        color: #d8f6ee;
+        font-family: ui-monospace, monospace;
+        font-size: clamp(20px, 1.7vw, 32px);
+        line-height: 1.3;
+      }
+
+      .terminal-line.output {
+        background: var(--panel);
+        color: var(--ink);
+        font-family: Inter, "Segoe UI", system-ui, sans-serif;
+        font-size: clamp(20px, 1.6vw, 30px);
+      }
+
+      .arrow {
+        color: var(--amber);
+        font-size: 34px;
+        font-weight: 900;
+        text-align: center;
+      }
+
+      .criteria-grid,
+      .commands,
+      .perm-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+      }
+
+      .criteria-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .perm-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+
+      .index {
+        width: 58px;
+        height: 58px;
+        display: grid;
+        place-items: center;
+        border-radius: 50%;
+        color: var(--ink);
+        background: #253138;
+        border: 2px solid var(--teal);
+        font-size: 28px;
+        font-weight: 900;
+      }
+
+      .criteria {
+        padding: 26px;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        background: var(--panel);
+      }
+
+      .criteria strong,
+      .command-card strong {
+        display: block;
+        margin-top: 14px;
+        color: var(--ink);
+        font-size: clamp(22px, 1.9vw, 34px);
+        line-height: 1.1;
+      }
+
+      .criteria span,
+      .command-card span {
+        display: block;
+        margin-top: 10px;
+        color: var(--muted);
+        font-size: clamp(17px, 1.4vw, 26px);
+        line-height: 1.2;
+      }
+
+      .command-card {
+        min-height: 150px;
+        padding: 26px;
+      }
+
+      .commands code {
+        display: block;
+        color: var(--teal);
+        font-family: ui-monospace, monospace;
+        font-size: clamp(22px, 1.9vw, 34px);
+        font-weight: 850;
+      }
+
+      .perm-card {
+        padding: 26px;
+        border-top: 6px solid var(--green);
+      }
+
+      .perm-card.ask {
+        border-top-color: var(--amber);
+      }
+
+      .perm-card.deny {
+        border-top-color: var(--rose);
+      }
+
+      .perm-card strong {
+        display: block;
+        color: var(--ink);
+        font-size: clamp(22px, 1.85vw, 32px);
+      }
+
+      .perm-card ul {
+        margin: 16px 0 0;
+        padding-left: 22px;
+        color: var(--muted);
+        font-size: clamp(16px, 1.35vw, 25px);
+        line-height: 1.45;
+      }
+
+      .perm-card ul li {
+        margin-bottom: 6px;
+      }
+
+      .compare {
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+        margin-top: 30px;
+      }
+
+      .compare-col {
+        padding: 26px;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        background: var(--panel);
+      }
+
+      .compare-col h3 {
+        margin: 0;
+        font-family: ui-monospace, monospace;
+        color: var(--ink);
+        font-size: clamp(30px, 2.6vw, 50px);
+      }
+
+      .compare-col p {
+        margin: 22px 0 0;
+        color: var(--muted);
+        font-size: clamp(20px, 1.7vw, 32px);
+        line-height: 1.25;
+      }
+
+      .compare-col.bad {
+        border-top: 6px solid var(--rose);
+      }
+
+      .compare-col.good {
+        border-top: 6px solid var(--green);
+      }
+
+      .compare-col ul {
+        margin: 20px 0 0;
+        padding-left: 22px;
+        color: var(--muted);
+        font-size: clamp(18px, 1.5vw, 28px);
+        line-height: 1.4;
+      }
+
+      .compare-col ul li {
+        margin-bottom: 8px;
+      }
+
+      .filetree {
+        font-family: ui-monospace, monospace;
+        font-size: clamp(19px, 1.6vw, 30px);
+        color: var(--ink);
+        background: #0b0f11;
+        border: 1px solid #314047;
+        border-radius: 8px;
+        padding: 28px 30px;
+        line-height: 1.7;
+      }
+
+      .filetree .dim {
+        color: var(--muted);
+      }
+
+      .filetree .hl {
+        color: var(--teal);
+        font-weight: 800;
+      }
+
+      .frontmatter {
+        font-family: ui-monospace, monospace;
+        font-size: clamp(17px, 1.4vw, 25px);
+        color: #d8f6ee;
+        background: #0b0f11;
+        border: 1px solid #314047;
+        border-radius: 8px;
+        padding: 26px 28px;
+        line-height: 1.6;
+        white-space: pre;
+      }
+
+      .frontmatter .key {
+        color: var(--amber);
+      }
+
+      .plugin-box {
+        border: 2px solid var(--teal);
+        border-radius: 12px;
+        padding: 40px;
+        background: rgba(23, 32, 37, 0.6);
+      }
+
+      .plugin-label {
+        color: var(--teal);
+        font-weight: 900;
+        font-size: clamp(20px, 1.8vw, 32px);
+        text-transform: uppercase;
+        margin-bottom: 24px;
+      }
+
+      .plugin-inner {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+      }
+
+      .plugin-item {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: var(--panel);
+        padding: 22px 26px;
+        text-align: center;
+        font-weight: 800;
+        font-size: clamp(20px, 1.8vw, 32px);
+        color: var(--ink);
+      }
+
+      .plugin-item span {
+        display: block;
+        margin-top: 8px;
+        font-weight: 500;
+        font-size: clamp(15px, 1.2vw, 22px);
+        color: var(--muted);
+      }
+
+      .notes {
+        position: absolute;
+        left: max(48px, calc((100vw - 1728px) / 2));
+        bottom: 34px;
+        z-index: 2;
+        color: var(--muted);
+        font-size: 16px;
+      }
+
+      [data-animate] {
+        opacity: 0;
+        transform: translateY(34px);
+        transition:
+          opacity 450ms ease,
+          transform 450ms cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+
+      [data-animate].shown {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      body.pdf-mode .slide,
+      body.pdf-mode [data-animate] {
+        transition: none !important;
+      }
+
+      @media (max-width: 980px) {
+        .stage {
+          width: min(100% - 40px, 780px);
+          padding: 72px 0 64px;
+          grid-template-columns: 1fr;
+          gap: 36px;
+        }
+
+        .visual {
+          min-height: auto;
+        }
+
+        .map,
+        .criteria-grid,
+        .commands,
+        .compare,
+        .perm-grid,
+        .plugin-inner {
+          grid-template-columns: 1fr;
+        }
+
+        .notes {
+          position: static;
+          width: min(100% - 40px, 780px);
+          margin: -40px auto 40px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="progress" aria-hidden="true"><span id="progress"></span></div>
+
+    <main class="deck">
+      <section class="slide" id="slide-1">
+        <div class="stage">
+          <div class="copy">
+            <p class="kicker" data-animate>Video 4 - Skill e Plugin</p>
+            <h1 data-animate data-delay="1">Estendi Claude Code senza scrivere una riga di codice.</h1>
+            <p class="support" data-animate data-delay="2">
+              Una skill insegna a Claude una procedura. Un plugin la distribuisce, insieme ad altro, a tutto il team. In questo video vediamo entrambe in azione, a partire da Ponytail, già installata nel Video 1.
+            </p>
+            <div class="accent-line" data-animate data-delay="3"></div>
+          </div>
+          <div class="visual commands" style="grid-template-columns: repeat(2, 1fr)">
+            <div class="command-card" data-animate data-delay="1"><code>/plugin marketplace add</code><span>aggiunge un marketplace</span></div>
+            <div class="command-card" data-animate data-delay="1"><code>/plugin install</code><span>installa un plugin</span></div>
+            <div class="command-card" data-animate data-delay="2"><code>/plugin list</code><span>mostra cosa hai installato</span></div>
+            <div class="command-card" data-animate data-delay="2"><code>/plugin disable</code><span>disattiva senza disinstallare</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" id="slide-2">
+        <div class="stage">
+          <div class="copy">
+            <p class="kicker" data-animate>Cos'è una skill</p>
+            <h1 data-animate data-delay="1">Una procedura scritta che Claude legge e segue — non nuovo codice.</h1>
+            <p class="support" data-animate data-delay="2">
+              Ogni skill vive in un file <code>SKILL.md</code>: un frontmatter che descrive nome e scopo, seguito dalle istruzioni vere e proprie.
+            </p>
+          </div>
+          <div class="visual">
+            <div class="filetree" data-animate data-delay="1">
+              <div>.claude/</div>
+              <div class="dim" style="padding-left: 32px">skills/</div>
+              <div class="dim" style="padding-left: 64px">nome-skill/</div>
+              <div class="hl" style="padding-left: 96px">SKILL.md</div>
+            </div>
+            <div class="frontmatter" data-animate data-delay="2">---
+<span class="key">name:</span> nome-skill
+<span class="key">description:</span> quando e come usarla
+---
+
+Istruzioni che Claude legge e segue
+quando la skill viene invocata.</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" id="slide-3">
+        <div class="stage" style="grid-template-columns: 1fr">
+          <div class="copy">
+            <p class="kicker" data-animate>Dove vive una skill</p>
+            <h1 class="wide" data-animate data-delay="1">Personale in ogni tuo progetto, oppure condivisa con la squadra.</h1>
+          </div>
+          <div class="compare">
+            <div class="compare-col" data-animate data-delay="2">
+              <h3>Personale</h3>
+              <p>Vive nella tua cartella utente. È disponibile in tutti i progetti su cui lavori, indipendentemente dal repository aperto.</p>
+            </div>
+            <div class="compare-col" data-animate data-delay="3">
+              <h3>Di progetto</h3>
+              <p>Vive dentro il repository. Viaggia con git: chiunque clona il progetto ha automaticamente la stessa skill a disposizione.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" id="slide-4">
+        <div class="stage" style="grid-template-columns: 1fr">
+          <div class="copy">
+            <p class="kicker" data-animate>Come si invoca una skill</p>
+            <h1 class="wide" data-animate data-delay="1">Esplicita con /nome-skill, oppure riconosciuta da sola da Claude.</h1>
+          </div>
+          <div class="compare">
+            <div class="compare-col" data-animate data-delay="2">
+              <h3>/nome-skill</h3>
+              <p>La scrivi tu esplicitamente nel prompt: Claude la segue subito, dall'inizio alla fine.</p>
+            </div>
+            <div class="compare-col" data-animate data-delay="3">
+              <h3>Riconoscimento automatico</h3>
+              <p>La tua richiesta corrisponde a quello che la skill descrive di fare: Claude la applica da solo, senza che tu la nomini.</p>
+            </div>
+          </div>
+          <div class="visual terminal" style="margin-top: 12px">
+            <div class="terminal-line" data-animate data-delay="4">&gt; /plugin list</div>
+            <div class="terminal-line output" data-animate data-delay="4">ponytail@ponytail — attiva (installata nel Video 1)</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" id="slide-5">
+        <div class="stage">
+          <div class="copy">
+            <p class="kicker" data-animate>Ponytail in azione</p>
+            <h1 data-animate data-delay="1">Costringe Claude a scegliere la soluzione più semplice possibile.</h1>
+            <p class="support" data-animate data-delay="2">
+              Prima di scrivere, si chiede: serve davvero? esiste già qualcosa di più corto? sto aggiungendo flessibilità che nessuno ha chiesto?
+            </p>
+            <div class="intensity-row" data-animate data-delay="3" style="display: flex; gap: 16px; margin-top: 24px">
+              <span class="tag">lite</span>
+              <span class="tag amber">full</span>
+              <span class="tag rose">ultra</span>
+            </div>
+          </div>
+          <div class="visual">
+            <div class="terminal-line" data-animate data-delay="1">&gt; aggiungi una funzione per calcolare lo sconto</div>
+            <div class="compare" style="margin-top: 0">
+              <div class="compare-col bad" data-animate data-delay="2">
+                <h3>Senza Ponytail</h3>
+                <ul>
+                  <li>funzione generica per ogni caso futuro</li>
+                  <li>parametri opzionali mai usati</li>
+                  <li>una dipendenza in più per un calcolo semplice</li>
+                </ul>
+              </div>
+              <div class="compare-col good" data-animate data-delay="3">
+                <h3>Con Ponytail</h3>
+                <ul>
+                  <li>una funzione, un parametro</li>
+                  <li>nessuna dipendenza aggiunta</li>
+                  <li>diff minimo, facile da rivedere</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" id="slide-6">
+        <div class="stage">
+          <div class="copy">
+            <p class="kicker" data-animate>Cos'è un plugin</p>
+            <h1 data-animate data-delay="1">Un pacchetto più grande: skill, agenti, automazioni e MCP insieme.</h1>
+            <p class="support" data-animate data-delay="2">
+              Si distribuisce tramite un marketplace — un repository che elenca plugin installabili — e ogni comando è prefissato col nome del plugin per evitare conflitti.
+            </p>
+          </div>
+          <div class="visual">
+            <div class="plugin-box" data-animate data-delay="3">
+              <div class="plugin-label">Plugin</div>
+              <div class="plugin-inner">
+                <div class="plugin-item">Skill<span>procedure scritte</span></div>
+                <div class="plugin-item">Agent<span>ruoli dedicati</span></div>
+                <div class="plugin-item">Hook<span>automazioni</span></div>
+                <div class="plugin-item">MCP server<span>Obsidian, Graphiti…</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" id="slide-7">
+        <div class="stage">
+          <div class="copy">
+            <p class="kicker" data-animate>Installare un secondo plugin</p>
+            <h1 data-animate data-delay="1">Stesso meccanismo già visto per Ponytail nel Video 1.</h1>
+            <p class="support" data-animate data-delay="2">
+              Prima si aggiunge il marketplace, poi si installa il plugin specifico. Un procedimento identico ogni volta, qualunque sia il plugin.
+            </p>
+          </div>
+          <div class="visual terminal">
+            <div class="terminal-line" data-animate data-delay="1">&gt; /plugin marketplace add anthropics/claude-plugins-official</div>
+            <div class="terminal-line output" data-animate data-delay="1">Marketplace aggiunto</div>
+            <div class="terminal-line" data-animate data-delay="2">&gt; /plugin install skill-creator@claude-plugins-official</div>
+            <div class="terminal-line output" data-animate data-delay="2">Plugin installato</div>
+            <div class="terminal-line" data-animate data-delay="3">&gt; /plugin list</div>
+            <div class="terminal-line output" data-animate data-delay="3">ponytail@ponytail, skill-creator@claude-plugins-official</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" id="slide-8">
+        <div class="stage" style="grid-template-columns: 1fr">
+          <div class="copy">
+            <p class="kicker" data-animate>Gestire i plugin installati</p>
+            <h1 class="wide" data-animate data-delay="1">/plugin list per vedere cosa hai, /plugin disable per metterlo in pausa.</h1>
+          </div>
+          <div class="commands" style="grid-template-columns: repeat(2, 1fr)">
+            <div class="command-card" data-animate data-delay="2"><code>/plugin list</code><span>elenca tutti i plugin installati e il loro stato</span></div>
+            <div class="command-card" data-animate data-delay="3"><code>/plugin disable</code><span>disattiva temporaneamente, senza disinstallare</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide wide" id="slide-9">
+        <div class="stage" style="grid-template-columns: 1fr">
+          <div class="copy">
+            <p class="kicker" data-animate>Chiusura</p>
+            <h1 class="wide" data-animate data-delay="1">Skill e plugin: come personalizziamo Claude Code per Fabioland.</h1>
+            <p class="support" data-animate data-delay="2">
+              È anche il modo in cui, col tempo, condividiamo tra collaboratori le procedure che funzionano meglio. Nel prossimo video vediamo /loop e /goal, il livello più avanzato di autonomia visto nel Video 2.
+            </p>
+          </div>
+          <div class="commands" style="grid-template-columns: repeat(4, 1fr)">
+            <div class="command-card" data-animate data-delay="3"><code>/plugin marketplace add</code><span>aggiunge un marketplace</span></div>
+            <div class="command-card" data-animate data-delay="3"><code>/plugin install</code><span>installa un plugin</span></div>
+            <div class="command-card" data-animate data-delay="3"><code>/plugin list</code><span>mostra cosa hai installato</span></div>
+            <div class="command-card" data-animate data-delay="3"><code>/plugin disable</code><span>disattiva senza disinstallare</span></div>
+          </div>
+        </div>
+        <p class="notes">Video 5 - /loop e /goal: far lavorare l'AI nel tempo</p>
+      </section>
+    </main>
+
+    <script>
+      const progress = document.getElementById("progress");
+      const slides = Array.from(document.querySelectorAll(".slide"));
+
+      const state = slides.map((slide) => ({
+        fragments: Array.from(slide.querySelectorAll("[data-animate]")),
+        shown: 0,
+      }));
+
+      let current = 0;
+
+      function render() {
+        slides.forEach((slide, i) => slide.classList.toggle("is-current", i === current));
+
+        const active = state[current];
+        active.fragments.forEach((el, idx) => el.classList.toggle("shown", idx < active.shown));
+
+        const totalSteps = state.reduce((sum, s) => sum + Math.max(s.fragments.length, 1), 0);
+        let doneSteps = 0;
+        for (let i = 0; i < current; i++) doneSteps += Math.max(state[i].fragments.length, 1);
+        doneSteps += Math.min(active.shown, Math.max(active.fragments.length, 1));
+        progress.style.width = `${(totalSteps > 0 ? doneSteps / totalSteps : 0) * 100}%`;
+      }
+
+      function next() {
+        const active = state[current];
+        if (active.shown < active.fragments.length) {
+          active.shown += 1;
+        } else if (current < slides.length - 1) {
+          current += 1;
+          state[current].shown = 0;
+        } else {
+          return;
+        }
+        render();
+      }
+
+      function prev() {
+        const active = state[current];
+        if (active.shown > 0) {
+          active.shown -= 1;
+        } else if (current > 0) {
+          current -= 1;
+          state[current].shown = state[current].fragments.length;
+        } else {
+          return;
+        }
+        render();
+      }
+
+      render();
+
+      const forwardKeys = ["ArrowRight", "ArrowDown", "PageDown"];
+      const backwardKeys = ["ArrowLeft", "ArrowUp", "PageUp"];
+
+      window.addEventListener("keydown", (event) => {
+        if (forwardKeys.includes(event.key)) {
+          event.preventDefault();
+          next();
+        } else if (backwardKeys.includes(event.key)) {
+          event.preventDefault();
+          prev();
+        }
+      });
+
+      // Used by to-pdf.mjs: jumps to slide `index` with every fragment already revealed.
+      function show(index) {
+        document.body.classList.add("pdf-mode");
+        current = Math.max(0, Math.min(slides.length - 1, index));
+        state[current].shown = state[current].fragments.length;
+        render();
+      }
+    </script>
+  </body>
+</html>
