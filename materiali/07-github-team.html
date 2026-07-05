@@ -1,0 +1,533 @@
+<!doctype html>
+<html lang="it">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Video 7 - GitHub e team</title>
+    <style>
+      :root {
+        --bg: #101417;
+        --panel: #172025;
+        --panel-2: #202b30;
+        --ink: #f4efe6;
+        --muted: #b7c0c4;
+        --line: #344149;
+        --teal: #49c5b6;
+        --amber: #f5b85b;
+        --rose: #e86f5f;
+        --blue: #6da7f2;
+        --green: #84c779;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        overflow: hidden;
+        background: #080a0c;
+        color: var(--ink);
+        font-family:
+          Inter, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont,
+          sans-serif;
+      }
+
+      .progress {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 50;
+        width: 100%;
+        height: 8px;
+        background: #12181c;
+      }
+
+      .progress span {
+        display: block;
+        width: 0;
+        height: 100%;
+        background: var(--teal);
+        transform-origin: left center;
+      }
+
+      .deck {
+        position: relative;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      .slide {
+        position: absolute;
+        inset: 0;
+        overflow-y: auto;
+        overflow-x: hidden;
+        opacity: 0;
+        transform: translateY(28px);
+        transition:
+          opacity 480ms ease,
+          transform 480ms cubic-bezier(0.2, 0.8, 0.2, 1);
+        pointer-events: none;
+        z-index: 1;
+        background:
+          linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, rgba(16, 20, 23, 0) 1px),
+          linear-gradient(rgba(255, 255, 255, 0.038) 1px, rgba(16, 20, 23, 0) 1px),
+          var(--bg);
+        background-size: 80px 80px;
+      }
+
+      .slide.is-current {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+        z-index: 2;
+      }
+
+      .slide::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 18px;
+        height: 100%;
+        background: var(--teal);
+      }
+
+      .slide::after {
+        content: "";
+        position: absolute;
+        right: -42px;
+        bottom: -18px;
+        width: 120px;
+        height: 420px;
+        background: var(--amber);
+        transform: skewX(-13deg);
+        box-shadow: 0 0 90px rgba(245, 184, 91, 0.2);
+      }
+
+      .stage {
+        position: relative;
+        z-index: 1;
+        width: min(1728px, calc(100vw - 96px));
+        min-height: 100vh;
+        margin: 0 auto;
+        padding: 8vh 0 7vh;
+        display: grid;
+        grid-template-columns: minmax(0, 0.95fr) minmax(420px, 0.8fr);
+        gap: clamp(36px, 5vw, 96px);
+        align-items: center;
+      }
+
+      .copy {
+        align-self: center;
+      }
+
+      .kicker {
+        margin: 0 0 20px;
+        color: var(--teal);
+        font-size: clamp(18px, 1.65vw, 32px);
+        font-weight: 850;
+        letter-spacing: 0;
+        text-transform: uppercase;
+      }
+
+      h1 {
+        max-width: 980px;
+        margin: 0;
+        color: var(--ink);
+        font-size: clamp(42px, 4.2vw, 80px);
+        line-height: 1.03;
+        font-weight: 880;
+        letter-spacing: 0;
+      }
+
+      .wide h1,
+      h1.wide {
+        max-width: 1420px;
+      }
+
+      .support {
+        max-width: 900px;
+        margin: 28px 0 0;
+        color: var(--muted);
+        font-size: clamp(22px, 2vw, 38px);
+        line-height: 1.25;
+      }
+
+      .accent-line {
+        width: 240px;
+        height: 8px;
+        margin-top: 36px;
+        background: var(--amber);
+      }
+
+      .visual {
+        position: relative;
+        min-height: 420px;
+        display: grid;
+        align-content: center;
+        gap: 18px;
+      }
+
+      .card,
+      .command-card {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        background: rgba(23, 32, 37, 0.94);
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.22);
+      }
+
+      .terminal {
+        display: grid;
+        gap: 18px;
+      }
+
+      .terminal-line {
+        padding: 28px 30px;
+        border-radius: 8px;
+        background: #0b0f11;
+        border: 1px solid #314047;
+        color: #d8f6ee;
+        font-family: ui-monospace, monospace;
+        font-size: clamp(19px, 1.6vw, 30px);
+        line-height: 1.3;
+      }
+
+      .terminal-line.output {
+        background: var(--panel);
+        color: var(--ink);
+        font-family: Inter, "Segoe UI", system-ui, sans-serif;
+        font-size: clamp(19px, 1.5vw, 28px);
+      }
+
+      .terminal-line.comment {
+        border-left: 6px solid var(--teal);
+      }
+
+      .terminal-line.reply {
+        border-left: 6px solid var(--green);
+        background: var(--panel);
+        color: var(--ink);
+        font-family: Inter, "Segoe UI", system-ui, sans-serif;
+        font-size: clamp(19px, 1.5vw, 28px);
+      }
+
+      .commands {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+      }
+
+      .command-card {
+        min-height: 150px;
+        padding: 26px;
+      }
+
+      .command-card strong {
+        display: block;
+        margin-top: 14px;
+        color: var(--ink);
+        font-size: clamp(22px, 1.9vw, 34px);
+        line-height: 1.1;
+      }
+
+      .command-card span {
+        display: block;
+        margin-top: 10px;
+        color: var(--muted);
+        font-size: clamp(17px, 1.4vw, 26px);
+        line-height: 1.2;
+      }
+
+      .commands code {
+        display: block;
+        color: var(--teal);
+        font-family: ui-monospace, monospace;
+        font-size: clamp(20px, 1.7vw, 30px);
+        font-weight: 850;
+      }
+
+      .compare {
+        grid-column: 1 / -1;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 18px;
+        margin-top: 30px;
+      }
+
+      .compare-col {
+        padding: 26px;
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        background: var(--panel);
+      }
+
+      .compare-col h3 {
+        margin: 0;
+        font-family: ui-monospace, monospace;
+        color: var(--ink);
+        font-size: clamp(28px, 2.4vw, 46px);
+      }
+
+      .compare-col p {
+        margin: 22px 0 0;
+        color: var(--muted);
+        font-size: clamp(20px, 1.7vw, 32px);
+        line-height: 1.25;
+      }
+
+      .notes {
+        position: absolute;
+        left: max(48px, calc((100vw - 1728px) / 2));
+        bottom: 34px;
+        z-index: 2;
+        color: var(--muted);
+        font-size: 16px;
+      }
+
+      [data-animate] {
+        opacity: 0;
+        transform: translateY(34px);
+        transition:
+          opacity 450ms ease,
+          transform 450ms cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+
+      [data-animate].shown {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      body.pdf-mode .slide,
+      body.pdf-mode [data-animate] {
+        transition: none !important;
+      }
+
+      @media (max-width: 980px) {
+        .stage {
+          width: min(100% - 40px, 780px);
+          padding: 72px 0 64px;
+          grid-template-columns: 1fr;
+          gap: 36px;
+        }
+
+        .visual {
+          min-height: auto;
+        }
+
+        .commands,
+        .compare {
+          grid-template-columns: 1fr;
+        }
+
+        .notes {
+          position: static;
+          width: min(100% - 40px, 780px);
+          margin: -40px auto 40px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="progress" aria-hidden="true"><span id="progress"></span></div>
+
+    <main class="deck">
+      <section class="slide" id="slide-1">
+        <div class="stage">
+          <div class="copy">
+            <p class="kicker" data-animate>Video 7 - GitHub e team</p>
+            <h1 data-animate>Dal terminale al browser: tutti possono chiedere una modifica.</h1>
+            <p class="support" data-animate>
+              Fabioland è un progetto di squadra, e il codice vive su GitHub. Vediamo i modi in cui Claude Code si integra con GitHub — sia per chi lavora da terminale, sia per chi preferisce restare nel browser.
+            </p>
+            <div class="accent-line" data-animate></div>
+          </div>
+          <div class="visual commands">
+            <div class="command-card" data-animate><code>gh CLI</code><span>legge e crea pull request</span></div>
+            <div class="command-card" data-animate><code>/review</code><span>revisiona una pull request</span></div>
+            <div class="command-card" data-animate><code>/install-github-app</code><span>installa la GitHub App</span></div>
+            <div class="command-card" data-animate><code>@claude</code><span>lo chiami in un commento</span></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" id="slide-2">
+        <div class="stage">
+          <div class="copy">
+            <p class="kicker" data-animate>La gh CLI</p>
+            <h1 data-animate>Claude legge e scrive pull request senza che tu passi dal browser.</h1>
+            <p class="support" data-animate>
+              Dentro una sessione, l'agente ha accesso diretto alla gh, la command line ufficiale di GitHub: legge una pull request, i suoi commenti, il suo diff, e può crearne una nuova.
+            </p>
+          </div>
+          <div class="visual terminal">
+            <div class="terminal-line" data-animate>&gt; mostrami i commenti sulla PR #12</div>
+            <div class="terminal-line output" data-animate>Claude usa gh sotto il cofano per leggere i commenti</div>
+            <div class="terminal-line" data-animate>&gt; gh pr create --title "..." --body "..."</div>
+            <div class="terminal-line output" data-animate>PR creata — titolo e descrizione generati da Claude</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" id="slide-3">
+        <div class="stage">
+          <div class="copy">
+            <p class="kicker" data-animate>La skill /review</p>
+            <h1 data-animate>Un secondo parere prima del merge, o prima della revisione umana.</h1>
+            <p class="support" data-animate>
+              Analizza le modifiche di una pull request GitHub cercando bug e problemi, usando lo stesso motore della revisione del codice locale.
+            </p>
+          </div>
+          <div class="visual terminal">
+            <div class="terminal-line" data-animate>&gt; /review 12</div>
+            <div class="terminal-line output" data-animate>Analizza il diff della PR #12, segnala bug e problemi trovati</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" id="slide-4">
+        <div class="stage">
+          <div class="copy">
+            <p class="kicker" data-animate>@claude nei commenti</p>
+            <h1 data-animate>Una volta installata la GitHub App, basta un commento.</h1>
+            <p class="support" data-animate>
+              Con il comando /install-github-app, che ti guida passo passo nella configurazione, colleghi Claude al repository — una volta sola.
+            </p>
+          </div>
+          <div class="visual terminal">
+            <div class="terminal-line" data-animate>&gt; /install-github-app</div>
+            <div class="terminal-line output" data-animate>Ti guida passo passo nella configurazione della GitHub App</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" id="slide-5">
+        <div class="stage">
+          <div class="copy">
+            <p class="kicker" data-animate>@claude in azione</p>
+            <h1 data-animate>Un commento su una issue, e Claude propone o applica la modifica.</h1>
+          </div>
+          <div class="visual terminal">
+            <div class="terminal-line comment" data-animate>@claude correggi il typo in questa riga</div>
+            <div class="terminal-line reply" data-animate>Claude legge il contesto, propone la modifica e crea un commit — tutto senza aprire un terminale</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide wide" id="slide-6">
+        <div class="stage" style="grid-template-columns: 1fr">
+          <div class="copy">
+            <p class="kicker" data-animate>Perché è utile per tutto il team</p>
+            <h1 class="wide" data-animate>Chi non sa git può proporre una correzione, senza doverlo imparare.</h1>
+            <p class="support" data-animate>
+              Resta comunque un passaggio umano di revisione prima che qualsiasi modifica venga unita al progetto — lo vediamo meglio nell'ultimo video.
+            </p>
+          </div>
+          <div class="compare">
+            <div class="compare-col" data-animate>
+              <h3>Solo browser</h3>
+              <p>Un commento con @claude su una issue o una PR: basta un account GitHub.</p>
+            </div>
+            <div class="compare-col" data-animate>
+              <h3>Terminale</h3>
+              <p>gh CLI e /review, per chi lavora sul codice ogni giorno.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide wide" id="slide-7">
+        <div class="stage" style="grid-template-columns: 1fr">
+          <div class="copy">
+            <p class="kicker" data-animate>Chiusura</p>
+            <h1 class="wide" data-animate>Con questo abbiamo coperto tutto il flusso, dal terminale al browser.</h1>
+            <p class="support" data-animate>
+              Nell'ultimo video mettiamo insieme le buone pratiche di sicurezza che valgono per tutto quello che abbiamo visto finora.
+            </p>
+          </div>
+          <div class="commands">
+            <div class="command-card" data-animate><code>gh CLI</code><span>legge e crea pull request dal terminale</span></div>
+            <div class="command-card" data-animate><code>/review</code><span>revisiona una pull request</span></div>
+            <div class="command-card" data-animate><code>/install-github-app</code><span>installa la GitHub App sul repo</span></div>
+            <div class="command-card" data-animate><code>@claude</code><span>nei commenti, senza aprire un terminale</span></div>
+          </div>
+        </div>
+        <p class="notes">Video 8 - Buone pratiche, sicurezza e limiti</p>
+      </section>
+    </main>
+
+    <script>
+      const progress = document.getElementById("progress");
+      const slides = Array.from(document.querySelectorAll(".slide"));
+
+      const state = slides.map((slide) => ({
+        fragments: Array.from(slide.querySelectorAll("[data-animate]")),
+        shown: 0,
+      }));
+
+      let current = 0;
+
+      function render() {
+        slides.forEach((slide, i) => slide.classList.toggle("is-current", i === current));
+
+        const active = state[current];
+        active.fragments.forEach((el, idx) => el.classList.toggle("shown", idx < active.shown));
+
+        const totalSteps = state.reduce((sum, s) => sum + Math.max(s.fragments.length, 1), 0);
+        let doneSteps = 0;
+        for (let i = 0; i < current; i++) doneSteps += Math.max(state[i].fragments.length, 1);
+        doneSteps += Math.min(active.shown, Math.max(active.fragments.length, 1));
+        progress.style.width = `${(totalSteps > 0 ? doneSteps / totalSteps : 0) * 100}%`;
+      }
+
+      function next() {
+        const active = state[current];
+        if (active.shown < active.fragments.length) {
+          active.shown += 1;
+        } else if (current < slides.length - 1) {
+          current += 1;
+          state[current].shown = 0;
+        } else {
+          return;
+        }
+        render();
+      }
+
+      function prev() {
+        const active = state[current];
+        if (active.shown > 0) {
+          active.shown -= 1;
+        } else if (current > 0) {
+          current -= 1;
+          state[current].shown = state[current].fragments.length;
+        } else {
+          return;
+        }
+        render();
+      }
+
+      render();
+
+      const forwardKeys = ["ArrowRight", "ArrowDown", "PageDown"];
+      const backwardKeys = ["ArrowLeft", "ArrowUp", "PageUp"];
+
+      window.addEventListener("keydown", (event) => {
+        if (forwardKeys.includes(event.key)) {
+          event.preventDefault();
+          next();
+        } else if (backwardKeys.includes(event.key)) {
+          event.preventDefault();
+          prev();
+        }
+      });
+
+      // Used by to-pdf.mjs: jumps to slide `index` with every fragment already revealed.
+      function show(index) {
+        document.body.classList.add("pdf-mode");
+        current = Math.max(0, Math.min(slides.length - 1, index));
+        state[current].shown = state[current].fragments.length;
+        render();
+      }
+    </script>
+  </body>
+</html>
