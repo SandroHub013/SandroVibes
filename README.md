@@ -23,3 +23,18 @@ script/      script di lettura per la registrazione + piano del corso
 | 8 | Buone pratiche, sicurezza e limiti | ✅ | — |
 
 I video sono disponibili su [YouTube](https://www.youtube.com/@SandroHub013).
+
+## Licenza
+
+Contenuto del corso — presentazioni, script e materiali — rilasciato sotto
+[Creative Commons Attribution 4.0 International](LICENSE) (CC BY 4.0).
+
+Puoi usarlo, adattarlo e ridistribuirlo, anche commercialmente, a patto di
+citare l'autore:
+
+> Alessandro Boni — *Basi avanzate per il vibe coding*
+> https://github.com/SandroHub013/SandroVibes
+
+Non è una licenza software: è materiale didattico, e CC BY è lo standard per
+questo tipo di opera. Eventuale codice negli esempi è liberamente riutilizzabile
+senza vincoli.
